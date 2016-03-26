@@ -117,8 +117,8 @@ class Reports
                 array($current) :
                 pll_languages_list();
 
-        $query['join'].= $polylang->model->join_clause('post');
-        $query['where'].= $polylang->model->where_clause($lang, 'post');
+        $query['join'].= PLL()->model->join_clause('post'); // $polylang->model-> deprecated
+        $query['where'].= PLL()->model->where_clause($lang, 'post'); // $polylang->model-> deprecated
 
         return $query;
     }
@@ -205,8 +205,8 @@ class Reports
                 array($current) :
                 pll_languages_list();
 
-        $join = $polylang->model->join_clause('post');
-        $where = $polylang->model->where_clause($lang, 'post');
+        $join = PLL()->model->post->join_clause(); // $polylang->model-> deprecated 
+        $where = PLL()->model->post->where_clause($lang); // $polylang->model-> deprecated
 
         return str_replace('WHERE 1=1', "{$join} WHERE 1=1 {$where}", $query);
     }
