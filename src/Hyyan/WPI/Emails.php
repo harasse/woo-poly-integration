@@ -55,6 +55,11 @@ class Emails
         $refer = isset($_GET['action']) &&
                 esc_attr($_GET['action'] === 'woocommerce_mark_order_status');
 
+/* ******add-on to have multilanguage on note and refund mails ********* */
+        if ($_POST['note_type'] == 'customer') {$refer = true ;}
+        if ($_POST['refund_amount'] && ($_POST['refund_amount'] > 0)) {$refer = true ;}
+/* ******add-on to have multilanguage on note and refund mails ********* */
+
         if ((!is_admin() && !isset($_REQUEST['ipn_track_id'])) || (defined('DOING_AJAX') && !$refer)) {
             return $locale;
         }
