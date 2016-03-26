@@ -94,7 +94,7 @@ class Emails
             $entity = Utilities::getLanguageEntity($orderLanguage);
 
             if ($entity) {
-                $polylang->curlang = $polylang->model->get_language(
+                $polylang->curlang = PLL()->model->get_language( // $polylang->model-> deprecated
                         $entity->locale
                 );
                 $GLOBALS['text_direction'] = $entity->is_rtl ? 'rtl' : 'ltr';
