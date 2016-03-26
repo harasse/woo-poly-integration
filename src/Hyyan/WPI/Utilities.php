@@ -34,7 +34,7 @@ final class Utilities
     public static function getProductTranslationsArrayByID($ID, $excludeDefault = false)
     {
         global $polylang;
-        $IDS = $polylang->model->get_translations('post', $ID);
+        $IDS = PLL()->model->post->get_translations('post', $ID); // $polylang->model->get_translations() is now deprecated
         if (true === $excludeDefault) {
             unset($IDS[pll_default_language()]);
         }
@@ -110,7 +110,7 @@ final class Utilities
     {
         global $polylang;
 
-        $langs = $polylang->model->get_languages_list();
+        $langs = PLL()->model->get_languages_list(); // $polylang->model-> deprecated
 
         foreach ($langs as $lang) {
             if ($lang->slug == $slug) {
@@ -135,7 +135,7 @@ final class Utilities
     public static function getTermTranslationsArrayByID($ID, $excludeDefault = false)
     {
         global $polylang;
-        $IDS = $polylang->model->get_translations('term', $ID);
+        $IDS = PLL()->model->get_translations('term', $ID); // $polylang->model-> deprecated
         if (true === $excludeDefault) {
             unset($IDS[pll_default_language()]);
         }
