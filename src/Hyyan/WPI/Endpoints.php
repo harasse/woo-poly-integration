@@ -301,8 +301,8 @@ class Endpoints
     public function fixMyAccountLinkInMenus(array $items = array())
     {
         global $polylang;
-        $translations = $polylang->model->get_translations(
-                'post', wc_get_page_id('myaccount')
+        $translations = PLL()->model->post->get_translations( // $polylang->model-> deprecated
+                 wc_get_page_id('myaccount') // suppress post 
         );
 
         foreach ($items as $item) {
