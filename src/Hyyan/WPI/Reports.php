@@ -117,8 +117,8 @@ class Reports
                 array($current) :
                 pll_languages_list();
 
-        $query['join'].= PLL()->model->join_clause('post'); // $polylang->model-> deprecated
-        $query['where'].= PLL()->model->where_clause($lang, 'post'); // $polylang->model-> deprecated
+        $query['join'].= PLL()->model->post->join_clause(); // $polylang->model-> deprecated
+        $query['where'].= PLL()->model->post->where_clause($lang); // $polylang->model-> deprecated
 
         return $query;
     }
