@@ -42,7 +42,7 @@ class Duplicator
     public function unlinkOrginalProductTranslations($ID)
     {
         global $polylang;
-        PLL()->model->delete_translation('post', $ID); // $polylang->model-> deprecated
+        PLL()->model->post->delete_translation($ID); // $polylang->model-> deprecated
     }
 
     /**
