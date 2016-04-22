@@ -51,20 +51,24 @@ class Endpoints
                 , array($this, 'updateRules')
                 , 100, 2
         );
+        /*
         add_filter(
                 'page_link'
                 , array($this, 'filterPermalink')
                 , 10, 2
         );
+        */
         add_filter(
                 'pll_the_language_link'
                 , array($this, 'correctPolylangSwitcherLinks')
                 , 10, 2
         );
+        /*
         add_filter(
                 'wp_get_nav_menu_items'
                 , array($this, 'fixMyAccountLinkInMenus')
         );
+        */
         add_action(
                 'current_screen'
                 , array($this, 'showFlashMessages')
@@ -302,7 +306,7 @@ class Endpoints
     {
         global $polylang;
         $translations = PLL()->model->post->get_translations( // $polylang->model-> deprecated
-                 wc_get_page_id('myaccount') // suppress post 
+                 wc_get_page_id('myaccount') // suppress post
         );
 
         foreach ($items as $item) {
