@@ -95,7 +95,7 @@ class Taxonomies
             'attributes' => 'Hyyan\WPI\Taxonomies\Attributes',
             'categories' => 'Hyyan\WPI\Taxonomies\Categories',
             'tags' => 'Hyyan\WPI\Taxonomies\Tags',
-            'shipping-class' => 'Hyyan\WPI\Taxonomies\ShippingCalss'
+            'shipping-class' => 'Hyyan\WPI\Taxonomies\ShippingClass'
         );
 
         foreach ($supported as $option => $class) {
