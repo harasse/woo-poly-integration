@@ -58,10 +58,6 @@ class Emails
             // reset password
             add_filter('woocommerce_email_subject_customer_reset_password', array( $this, 'translate_woocommerce_email_subject_customer_reset_password' ), 10, 2);
             add_filter('woocommerce_email_heading_customer_reset_password', array( $this, 'translate_woocommerce_email_heading_customer_reset_password' ), 10, 2);
-
-
-            //remove_action( 'woocommerce_email_before_order_table', 'email_instructions', 10);
-            //add_action( 'woocommerce_email_before_order_table', array( $this, 'translated_email_instructions' ), 10, 3 );
         }
     }
 
