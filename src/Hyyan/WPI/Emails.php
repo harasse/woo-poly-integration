@@ -22,297 +22,450 @@ use Hyyan\WPI\Admin\Settings,
  */
 class Emails
 {
+    /** @var array Array of email types */
+    public $emails;
+
+    /** @var array Array of email default settings */
+    protected $default_settings;
 
     /**
      * Construct object
      */
     public function __construct() {
         if ('on' === Settings::getOption('emails', Features::getID(), 'on')) {
-            add_filter('plugin_locale', array($this, 'correctLocal'), 100);
+            add_filter('plugin_locale', array($this, 'correctLocale'), 100);
+
+            // Register woocommerce email subjects and headings in polylang strings translations table
+            add_action('plugins_loaded', array( $this, 'register_email_strings_for_translation' ) ); // called only after all plugins are loaded
 
             // Translate Woocommerce email subjects and headings to the order language
             // new order
-            add_filter('woocommerce_email_subject_new_order', array( $this, 'translate_woocommerce_email_subject_new_order' ), 10, 2);
-            add_filter('woocommerce_email_heading_new_order', array( $this, 'translate_woocommerce_email_heading_new_order' ), 10, 2);
+            add_filter('woocommerce_email_subject_new_order', array( $this, 'translate_email_subject_new_order' ), 10, 2);
+            add_filter('woocommerce_email_heading_new_order', array( $this, 'translate_email_heading_new_order' ), 10, 2);
             // processing order
-            add_filter('woocommerce_email_subject_customer_processing_order', array( $this, 'translate_woocommerce_email_subject_customer_processing_order' ), 10, 2);
-            add_filter('woocommerce_email_heading_customer_processing_order', array( $this, 'translate_woocommerce_email_heading_customer_processing_order' ), 10, 2);
+            add_filter('woocommerce_email_subject_customer_processing_order', array( $this, 'translate_email_subject_customer_processing_order' ), 10, 2);
+            add_filter('woocommerce_email_heading_customer_processing_order', array( $this, 'translate_email_heading_customer_processing_order' ), 10, 2);
             // refunded order
-            add_filter('woocommerce_email_subject_customer_refunded_order', array( $this, 'translate_woocommerce_email_subject_customer_refunded_order'), 10, 2);
-            add_filter('woocommerce_email_heading_customer_refunded_order', array( $this, 'translate_woocommerce_email_heading_customer_refunded_order'), 10, 2);
+            add_filter('woocommerce_email_subject_customer_refunded_order', array( $this, 'translate_email_subject_customer_refunded_order'), 10, 2);
+            add_filter('woocommerce_email_heading_customer_refunded_order', array( $this, 'translate_email_heading_customer_refunded_order'), 10, 2);
             // customer note
-            add_filter('woocommerce_email_subject_customer_note', array( $this, 'translate_woocommerce_email_subject_customer_note' ), 10, 2);
-            add_filter('woocommerce_email_heading_customer_note', array( $this, 'translate_woocommerce_email_heading_customer_note' ), 10, 2);
+            add_filter('woocommerce_email_subject_customer_note', array( $this, 'translate_email_subject_customer_note' ), 10, 2);
+            add_filter('woocommerce_email_heading_customer_note', array( $this, 'translate_email_heading_customer_note' ), 10, 2);
             // customer invoice
-            add_filter( 'woocommerce_email_subject_customer_invoice', array( $this, 'translate_woocommerce_email_subject_customer_invoice' ), 10, 2);
-            add_filter( 'woocommerce_email_heading_customer_invoice', array( $this, 'translate_woocommerce_email_heading_customer_invoice' ), 10, 2);
+            add_filter( 'woocommerce_email_subject_customer_invoice', array( $this, 'translate_email_subject_customer_invoice' ), 10, 2);
+            add_filter( 'woocommerce_email_heading_customer_invoice', array( $this, 'translate_email_heading_customer_invoice' ), 10, 2);
             // customer invoice paid
-            add_filter('woocommerce_email_subject_customer_invoice_paid', array( $this, 'translate_woocommerce_email_subject_customer_invoice_paid' ), 10, 2);
-            add_filter('woocommerce_email_heading_customer_invoice_paid', array( $this, 'translate_woocommerce_email_heading_customer_invoice_paid' ), 10, 2);
+            add_filter('woocommerce_email_subject_customer_invoice_paid', array( $this, 'translate_email_subject_customer_invoice_paid' ), 10, 2);
+            add_filter('woocommerce_email_heading_customer_invoice_paid', array( $this, 'translate_email_heading_customer_invoice_paid' ), 10, 2);
             // completed order
-            add_filter('woocommerce_email_subject_customer_completed_order', array( $this, 'translate_woocommerce_email_subject_customer_completed_order' ), 10, 2);
-            add_filter('woocommerce_email_heading_customer_completed_order', array( $this, 'translate_woocommerce_email_heading_customer_completed_order' ), 10, 2);
+            add_filter('woocommerce_email_subject_customer_completed_order', array( $this, 'translate_email_subject_customer_completed_order' ), 10, 2);
+            add_filter('woocommerce_email_heading_customer_completed_order', array( $this, 'translate_email_heading_customer_completed_order' ), 10, 2);
             // new account
-            add_filter('woocommerce_email_subject_customer_new_account', array( $this, 'translate_woocommerce_email_subject_customer_new_account' ), 10, 2);
-            add_filter('woocommerce_email_heading_customer_new_account', array( $this, 'translate_woocommerce_email_heading_customer_new_account' ), 10, 2);
+            add_filter('woocommerce_email_subject_customer_new_account', array( $this, 'translate_email_subject_customer_new_account' ), 10, 2);
+            add_filter('woocommerce_email_heading_customer_new_account', array( $this, 'translate_email_heading_customer_new_account' ), 10, 2);
             // reset password
-            add_filter('woocommerce_email_subject_customer_reset_password', array( $this, 'translate_woocommerce_email_subject_customer_reset_password' ), 10, 2);
-            add_filter('woocommerce_email_heading_customer_reset_password', array( $this, 'translate_woocommerce_email_heading_customer_reset_password' ), 10, 2);
+            add_filter('woocommerce_email_subject_customer_reset_password', array( $this, 'translate_email_subject_customer_reset_password' ), 10, 2);
+            add_filter('woocommerce_email_heading_customer_reset_password', array( $this, 'translate_email_heading_customer_reset_password' ), 10, 2);
         }
     }
 
+    /**
+     * Register woocommerce email subjects and headings in polylang strings
+     * translations table
+     */
+    function register_email_strings_for_translation() {
+
+        $this->emails = array(
+            'new_order',
+            'customer_processing_order',
+            'customer_refunded_order',
+            'customer_note',
+            'customer_invoice',
+            'customer_completed_order',
+            'customer_new_account',
+            'customer_reset_password'
+        );
+
+        $this->default_settings = array(
+            'new_order_subject'                             => __( '[{site_title}] New customer order ({order_number}) - {order_date}', 'woocommerce' ),
+            'new_order_heading'                             => __( 'New customer order', 'woocommerce' ),
+            'customer_processing_order_subject'             => __( 'Your {site_title} order receipt from {order_date}', 'woocommerce' ),
+            'customer_processing_order_heading'             => __( 'Thank you for your order', 'woocommerce' ),
+            'customer_refunded_order_subject_partial'       => __( 'Your {site_title} order from {order_date} has been partially refunded', 'woocommerce' ),
+            'customer_refunded_order_heading_partial'       => __( 'Your order has been partially refunded', 'woocommerce' ),
+            'customer_refunded_order_subject_full'          => __( 'Your {site_title} order from {order_date} has been refunded', 'woocommerce' ),
+            'customer_refunded_order_heading_full'          => __( 'Your order has been fully refunded', 'woocommerce' ),
+            'customer_note_subject'                         => __( 'Note added to your {site_title} order from {order_date}', 'woocommerce'),
+            'customer_note_heading'                         => __( 'A note has been added to your order', 'woocommerce'),
+            'customer_invoice_subject_paid'                 => __( 'Your {site_title} order from {order_date}', 'woocommerce'),
+            'customer_invoice_heading_paid'                 => __( 'Order {order_number} details', 'woocommerce'),
+            'customer_invoice_subject'                      => __( 'Invoice for order {order_number} from {order_date}', 'woocommerce'),
+            'customer_invoice_heading'                      => __( 'Invoice for order {order_number}', 'woocommerce'),
+            'customer_completed_order_subject'              => __( 'Your {site_title} order from {order_date} is complete', 'woocommerce' ),
+            'customer_completed_order_heading'              => __( 'Your order is complete', 'woocommerce' ),
+            'customer_completed_order_subject_downloadable' => __( 'Your {site_title} order from {order_date} is complete - download your files', 'woocommerce' ),
+            'customer_completed_order_heading_downloadable' => __( 'Your order is complete - download your files', 'woocommerce' ),
+            'customer_new_account_subject'                  => __( 'Your account on {site_title}', 'woocommerce'),
+            'customer_new_account_heading'                  => __( 'Welcome to {site_title}', 'woocommerce'),
+            'customer_reset_password_subject'               => __( 'Password Reset for {site_title}', 'woocommerce'),
+            'customer_reset_password_heading'               => __( 'Password Reset Instructions', 'woocommerce')
+        );
+
+        // Register strings for translation and hook filters
+        foreach ( $this->emails as $email ) {
+            switch ( $email ) {
+                case 'customer_refunded_order':
+                    // Register strings
+                    $this->register_string( $email, '_partial' );
+                    $this->register_string( $email, '_full' );
+                    break;
+
+                case 'customer_invoice':
+                    // Register strings
+                    $this->register_string( $email, '_paid' );
+                    $this->register_string( $email );
+                    break;
+
+                case 'customer_completed_order':
+                    $this->register_string( $email, '_downloadable' );
+                    $this->register_string( $email );
+                    break;
+
+                case 'new_order':
+                case 'customer_processing_order':
+                case 'customer_note':
+                case 'customer_new_account':
+                case 'customer_reset_password':
+                default:
+                    // Register strings
+                    $this->register_string( $email );
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Register email subjects and headings strings for translation in Polylang
+     * Strings Translations table
+     *
+     * Note: This function uses get_option to retrive the subject and heading
+     * string from the WooCommerce Admin Settings page. get_option will return false
+     * if the Admin user has not changed (nor saved) the default settings.
+     *
+     * @param string    $email_type Email type
+     * @param string    $sufix      Additional string variation, e.g. invoice paid vs invoice
+     */
+    function register_string( $email_type, $sufix = '' ) {
+
+        $settings = get_option( 'woocommerce_' . $email_type . '_settings' );
+
+        if ( false == $settings ) {
+            // Not in the database, use default
+            if ( isset( $this->default_settings[$email_type . '_subject' . $sufix] ) && isset( $this->default_settings[$email_type . '_heading' . $sufix] ) ) {
+                pll_register_string( 'woocommerce_' . $email_type . '_subject' . $sufix, $this->default_settings[$email_type . '_subject' . $sufix], 'Woocommerce Emails' );
+                pll_register_string( 'woocommerce_' . $email_type . '_heading' . $sufix, $this->default_settings[$email_type . '_heading' . $sufix], 'Woocommerce Emails' );
+            }
+        } else {
+            if ( isset( $settings['subject' . $sufix] ) && isset( $settings['heading' . $sufix] ) ) {
+                pll_register_string( 'woocommerce_' . $email_type . '_subject' . $sufix, $settings['subject' . $sufix], 'Woocommerce Emails' );
+                pll_register_string( 'woocommerce_' . $email_type . '_heading' . $sufix, $settings['heading' . $sufix], 'Woocommerce Emails' );
+            }
+        }
+    }
 
     /**
      * Translate to the order language, the email subject of new order email notifications to the admin
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_new_order( $subject, $order ) {
-        return $this->translate_woocommerce_email( $subject, $order ,'subject' ,'new_order' );
+    function translate_email_subject_new_order( $subject, $order ) {
+        return $this->translate_email_string_to_order_language( $subject, $order ,'subject' ,'new_order' );
     }
 
     /**
      * Translate to the order language, the email heading of new order email notifications to the admin
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_new_order( $heading, $order ) {
-        return $this->translate_woocommerce_email( $heading, $order ,'heading' ,'new_order' );
+    function translate_email_heading_new_order( $heading, $order ) {
+        return $this->translate_email_string_to_order_language( $heading, $order ,'heading' ,'new_order' );
     }
 
     /**
      * Translate to the order language, the email subject of processing order email notifications to the customer
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_customer_processing_order( $subject, $order ) {
-        return $this->translate_woocommerce_email( $subject, $order ,'subject' ,'customer_processing_order' );
+    function translate_email_subject_customer_processing_order( $subject, $order ) {
+        return $this->translate_email_string_to_order_language( $subject, $order ,'subject' ,'customer_processing_order' );
     }
 
     /**
      * Translate to the order language, the email heading of processing order email notifications to the customer
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_customer_processing_order( $heading, $order ) {
-        return $this->translate_woocommerce_email( $heading, $order ,'heading' ,'customer_processing_order' );
+    function translate_email_heading_customer_processing_order( $heading, $order ) {
+        return $this->translate_email_string_to_order_language( $heading, $order ,'heading' ,'customer_processing_order' );
     }
 
     /**
      * Translate to the order language, the email subject of refunded order email notifications to the customer
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_customer_refunded_order( $subject, $order ) {
-        if ( $this->is_fully_refunded( $order ) ) {
-            return $this->translate_woocommerce_email( $subject, $order ,'subject_full' , 'customer_refunded_order' );
+    function translate_email_subject_customer_refunded_order( $subject, $order ) {
+        if ( ! empty( $order ) && $this->is_fully_refunded( $order ) ) {
+            return $this->translate_email_string_to_order_language( $subject, $order ,'subject_full' , 'customer_refunded_order' );
         } else {
-            return $this->translate_woocommerce_email( $subject, $order ,'subject_partial' , 'customer_refunded_order' );
+            return $this->translate_email_string_to_order_language( $subject, $order ,'subject_partial' , 'customer_refunded_order' );
         }
     }
 
     /**
      * Translate to the order language, the email heading of refunded order email notifications to the customer
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_customer_refunded_order( $subject, $order ) {
-        if ( $this->is_fully_refunded( $order ) ) {
-            return $this->translate_woocommerce_email( $subject, $order ,'heading_full' , 'customer_refunded_order' );
+    function translate_email_heading_customer_refunded_order( $subject, $order ) {
+        if ( ! empty( $order ) && $this->is_fully_refunded( $order ) ) {
+            return $this->translate_email_string_to_order_language( $subject, $order ,'heading_full' , 'customer_refunded_order' );
         } else {
-            return $this->translate_woocommerce_email( $subject, $order ,'heading_partial' , 'customer_refunded_order' );
+            return $this->translate_email_string_to_order_language( $subject, $order ,'heading_partial' , 'customer_refunded_order' );
         }
     }
 
     /**
      * Translate to the order language, the email subject of customer note emails
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_customer_note( $subject, $order ) {
-        return $this->translate_woocommerce_email( $subject, $order, 'subject', 'note' );
+    function translate_email_subject_customer_note( $subject, $order ) {
+        return $this->translate_email_string_to_order_language( $subject, $order, 'subject', 'customer_note' );
     }
 
     /**
      * Translate to the order language, the email heading of customer note emails
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_customer_note( $heading, $order ) {
-        return $this->translate_woocommerce_email( $heading, $order, 'heading', 'note' );
+    function translate_email_heading_customer_note( $heading, $order ) {
+        return $this->translate_email_string_to_order_language( $heading, $order, 'heading', 'customer_note' );
     }
 
     /**
      * Translate to the order language, the email subject of order invoice email notifications to the customer
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_customer_invoice( $subject, $order ) {
-        return $this->translate_woocommerce_email( $subject, $order ,'subject' ,'invoice' );
+    function translate_email_subject_customer_invoice( $subject, $order ) {
+        return $this->translate_email_string_to_order_language( $subject, $order ,'subject' ,'customer_invoice' );
     }
 
     /**
      * Translate to the order language, the email heading of of order invoice email notifications to the customer
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_customer_invoice( $heading, $order ) {
-        return $this->translate_woocommerce_email( $heading, $order ,'heading' ,'invoice' );
+    function translate_email_heading_customer_invoice( $heading, $order ) {
+        return $this->translate_email_string_to_order_language( $heading, $order ,'heading' ,'customer_invoice' );
     }
 
     /**
      * Translate to the order language, the email subject of order invoice paid email notifications to the customer
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_customer_invoice_paid( $subject, $order ) {
-      return $this->translate_woocommerce_email( $subject, $order ,'subject_paid' ,'invoice' );
+    function translate_email_subject_customer_invoice_paid( $subject, $order ) {
+        return $this->translate_email_string_to_order_language( $subject, $order ,'subject_paid' ,'customer_invoice' );
     }
 
     /**
      * Translate to the order language, the email heading of of order invoice paid email notifications to the customer
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_customer_invoice_paid( $heading, $order ) {
-        return $this->translate_woocommerce_email( $heading, $order ,'heading_paid' ,'invoice' );
+    function translate_email_heading_customer_invoice_paid( $heading, $order ) {
+        return $this->translate_email_string_to_order_language( $heading, $order ,'heading_paid' ,'customer_invoice' );
     }
 
     /**
      * Translate to the order language, the email subject of completed order email notifications to the customer
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_customer_completed_order( $subject, $order ) {
-        return $this->translate_woocommerce_email( $subject, $order ,'subject' ,'completed_order' );
+    function translate_email_subject_customer_completed_order( $subject, $order ) {
+        if ( ! empty( $order ) && $order->has_downloadable_item() ) {
+            return $this->translate_email_string_to_order_language( $subject, $order ,'subject_downloadable' ,'customer_completed_order' );
+        } else {
+            return $this->translate_email_string_to_order_language( $subject, $order ,'subject' ,'customer_completed_order' );
+        }
     }
 
     /**
      * Translate to the order language, the email heading of completed order email notifications to the customer
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_customer_completed_order( $heading, $order ) {
-        return $this->translate_woocommerce_email( $heading, $order ,'heading' ,'completed_order' );
+    function translate_email_heading_customer_completed_order( $heading, $order ) {
+        if ( ! empty( $order ) && $order->has_downloadable_item() ) {
+            return $this->translate_email_string_to_order_language( $subject, $order ,'heading_downloadable' ,'customer_completed_order' );
+        } else {
+            return $this->translate_email_string_to_order_language( $heading, $order ,'heading' ,'customer_completed_order' );
+        }
     }
 
     /**
-     * Translate to the order language, the email subject of new account email notifications to the customer
+     * Translate the email subject of new account email notifications to the customer
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_customer_new_account( $subject, $order ) {
-        return $this->translate_woocommerce_email( $subject, $order ,'subject' ,'new_account' );
+    function translate_email_subject_customer_new_account( $subject, $order ) {
+        return $this->translate_email_string( $subject, 'subject' ,'customer_new_account' );
     }
 
     /**
-     * Translate to the order language, the email heading of new account email notifications to the customer
+     * Translate the email heading of new account email notifications to the customer
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_customer_new_account( $heading, $order ) {
-        return $this->translate_woocommerce_email( $heading, $order ,'heading' ,'new_account' );
+    function translate_email_heading_customer_new_account( $heading, $order ) {
+        return $this->translate_email_string( $heading, 'heading' ,'customer_new_account' );
     }
 
     /**
-     * Translate to the order language, the email subject of password reset email notifications to the customer
+     * Translate the email subject of password reset email notifications to the customer
      *
-     * @param string    Email subject in default language
-     * @param WC_Order  Order object
+     * @param string    $subject    Email subject in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated subject
      */
-    function translate_woocommerce_email_subject_customer_reset_password( $subject, $order ) {
-        return $this->translate_woocommerce_email( $subject, $order ,'subject' ,'reset_password' );
+    function translate_email_subject_customer_reset_password( $subject, $order ) {
+        return $this->translate_email_string( $subject, 'subject' ,'customer_reset_password' );
     }
 
     /**
-     * Translate to the order language, the email heading of password reset email notifications to the customer
+     * Translate the email heading of password reset email notifications to the customer
      *
-     * @param string    Email heading in default language
-     * @param WC_Order  Order object
+     * @param string    $heading    Email heading in default language
+     * @param WC_Order  $order      Order object
      *
      * @return string   Translated heading
      */
-    function translate_woocommerce_email_heading_customer_reset_password( $heading, $order ) {
-        return $this->translate_woocommerce_email( $heading, $order ,'heading' ,'reset_password' );
+    function translate_email_heading_customer_reset_password( $heading, $order ) {
+        return $this->translate_email_string( $heading, 'heading' ,'customer_reset_password' );
     }
 
     /**
      * Translates Woocommerce email subjects and headings content
      *
-     * @param string    Subject or heading to translate
-     * @param WC_Order  Order object
-     * @param string    Type of string to translate <subject | heading>
-     * @param string    Email template
+     * @param string    $string     Subject or heading not translated
+     * @param string    $string_type    Type of string to translate <subject | heading>
+     * @param string    $email_type     Email template
      *
-     * @return string   Translated string
+     * @return string   Translated string, returns the original $string on error
      */
-    function translate_woocommerce_email( $string, $order, $string_type, $mail_template) {
+    function translate_email_string( $string, $string_type, $email_type ) {
 
-        $settings = get_option('woocommerce_' .$mail_template . '_settings');
-        if ( empty( $settings ) || ! isset( $settings[$string_type] ) || $settings[$string_type] === '' ) {
-            return $string;
+        // Get setting used to register string in the Polylang strings translation table
+        $_string = $string; // Store original string to return in case of error
+        if ( false == ( $string = $this->get_email_setting( $string_type, $email_type ) ) ) {
+            return $_string;
         }
 
-        $default_string = $settings[$string_type];
+        // Retrieve translation from Polylang Strings Translations table
+        $string = pll__( $string );
 
-        $order_language = pll_get_post_language ( $order->id );
-        if ( ! $order_language ) {
-            $order_language = pll_current_language();
+        $find       = '{site_title}';
+        $replace    = get_bloginfo( 'name' );
+
+        $string = str_replace( $find, $replace, $string );
+
+        return $string;
+    }
+
+    /**
+     * Translates Woocommerce email subjects and headings content to the order language
+     *
+     * @param string    $string     Subject or heading not translated
+     * @param WC_Order  $order      Order object
+     * @param string    $string_type    Type of string to translate <subject | heading>
+     * @param string    $email_type     Email template
+     *
+     * @return string   Translated string, returns the original $string on error
+     */
+    function translate_email_string_to_order_language( $string, $order, $string_type, $email_type ) {
+
+        if ( empty( $order ) ) {
+            return $string; // Returns the original $string on error (no order to get language from)
         }
 
-        $this->switch_woocommerce_emails_language( $order->id );
+        // Get setting used to register string in the Polylang strings translation table
+        $_string = $string; // Store original string to return in case of error
+        if ( false == ( $string = $this->get_email_setting( $string_type, $email_type ) ) ) {
+            return $_string;
+        }
 
-        $string = __( $default_string, 'woocommerce' );
+        // Get order language
+        $order_language = pll_get_post_language( $order->id, 'locale' );
+        if ( $order_language == '' ) {
+                $order_language = pll_default_language( 'locale' );
+        }
+
+        // Switch language
+        $this->switch_language( $order_language );
+
+        // Retrieve translation from Polylang Strings Translations table
+        $string = pll__( $string );
 
         $find                     = array();
         $replace                  = array();
@@ -331,10 +484,42 @@ class Emails
     }
 
     /**
+     * Get setting used to register string in the Polylang strings translation table
+     *
+     * @param string $string_type <subject | heading> of $email_type, e.g. subject, subject_paid
+     * @param string $email_type Email type, e.g. new_order, customer_invoice
+     *
+     * return $string|boolean Email setting from database if one is found, fallback to default setting if one is defined, false otherwise
+     */
+    function get_email_setting( $string_type, $email_type ) {
+
+        $settings = get_option('woocommerce_' .$email_type . '_settings');
+
+        if ( false == $settings ) {
+            // Not in the database, use default
+            if ( isset( $this->default_settings[$email_type . '_' . $string_type] ) ) {
+                return $this->default_settings[$email_type . '_' . $string_type];
+            } else {
+                return false;
+            }
+        } else {
+            if ( isset( $settings[$string_type] ) ) {
+                return $settings[$string_type];
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
      * Check whether a refund is made in full
+     *
+     * @param WC_Order $order Order object
+     *
+     * @return boolean True if order is fully refunded, False otherwise
      */
     function is_fully_refunded( $order ) {
-        if ( $order->get_remaining_refund_amount() > 0 || ( $order->has_free_item() && $order->get_remaining_refund_items() > 0 ) ) {
+        if ( ( ! empty( $order ) && $order->get_remaining_refund_amount() > 0 ) || ( ! empty( $order ) && $order->has_free_item() && $order->get_remaining_refund_items() > 0 ) ) {
                 // Order partially refunded
                 return false;
         } else {
@@ -346,29 +531,43 @@ class Emails
     /**
      * Reload text domains with order locale
      *
-     * @param int   Order ID
+     * @param string $language Language slug (e.g. en, de )
      */
-    function switch_woocommerce_emails_language( $order_id ) {
+    function switch_language( $language ) {
         if ( class_exists( 'Polylang' ) ) {
-            global $locale, $polylang, $woocommerce;
 
-            $order_language = pll_get_post_language( $order_id, 'locale' );
-            if ( $order_language == '' ) {
-                    $order_language = pll_default_language( 'locale' );
+            global $locale, $polylang, $woocommerce;
+            static $cache; // Polylang string translations cache object to avoid loading the same translations object several times
+
+            // Cache object not found. Create one...
+            if ( empty( $cache ) ) {
+                $cache = new \PLL_Cache();
             }
-            $current_language = pll_current_language( 'locale' );
+
+            //$current_language = pll_current_language( 'locale' );
 
             // unload plugin's textdomains
             unload_textdomain( 'default' );
             unload_textdomain( 'woocommerce' );
 
             // set locale to order locale
-            $locale = apply_filters( 'locale', $order_language );
-            $polylang->curlang->locale = $order_language;
+            $locale = apply_filters( 'locale', $language );
+            $polylang->curlang->locale = $language;
+
+            // Cache miss
+            if (false === $mo = $cache->get( $language ) ) {
+                $mo = new \PLL_MO();
+                $mo->import_from_db( $GLOBALS['polylang']->model->get_language( $language ) );
+                $GLOBALS['l10n']['pll_string'] = &$mo;
+
+                // Add to cache
+                $cache->set( $language, $mo );
+            }
 
             // (re-)load plugin's textdomain with order locale
-            load_default_textdomain( $order_language );
+            load_default_textdomain( $language );
             $woocommerce->load_plugin_textdomain();
+            $wp_locale = new \WP_Locale();
         }
     }
 
@@ -383,7 +582,7 @@ class Emails
      *
      * @return string locale
      */
-    public function correctLocal($locale)
+    public function correctLocale($locale)
     {
 
         global $polylang, $woocommerce;
@@ -392,7 +591,7 @@ class Emails
         }
 
         $refer = isset($_GET['action']) &&
-                esc_attr($_GET['action'] === 'woocommerce_mark_order_status');
+                esc_attr($_GET['action'] === 'woocommerce_mark_order_status'); // Should use sanitize_text_field() instead of esc_attr?
 
 /* ******add-on to have multilanguage on note and refund mails ********* */
         if (isset($_POST['note_type']) && $_POST['note_type'] == 'customer') {$refer = true ;}
