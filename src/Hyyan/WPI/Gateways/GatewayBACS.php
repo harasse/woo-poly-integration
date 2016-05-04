@@ -20,7 +20,27 @@ namespace Hyyan\WPI\Gateways;
 class GatewayBACS extends \WC_Gateway_BACS {
 
     /**
+    * Output for the order received page.
+    *
+    * Note: The difference from WC_Gateway_BACS is that we use __() before
+    * passing the string through wptexturize() and wpautop().
+    *
+    * @param int $order_id
+    */
+    public function thankyou_page( $order_id ) {
+
+            if ( $this->instructions ) {
+                    echo wpautop( wptexturize( wp_kses_post( __( $this->instructions, 'woocommerce' ) ) ) );
+            }
+            $this->bank_details( $order_id );
+
+    }
+
+    /**
     * Add content to the WC emails.
+    *
+    * Note: The difference from WC_Gateway_BACS is that we use __() before
+    * passing the string through wptexturize() and wpautop().
     *
     * @param WC_Order $order
     * @param bool $sent_to_admin
@@ -39,6 +59,9 @@ class GatewayBACS extends \WC_Gateway_BACS {
 
     /**
     * Get bank details and place into a list format.
+    *
+    * Note: Since this is declared as a private function in WC_Gateway_BACS, it needs
+    * to be copied here 1:1
     *
     * @param int $order_id
     */
