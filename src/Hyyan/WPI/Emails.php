@@ -159,13 +159,7 @@ class Emails
 
         $settings = get_option( 'woocommerce_' . $email_type . '_settings' );
 
-        if ( false == $settings ) {
-            // Not in the database, use default
-            if ( isset( $this->default_settings[$email_type . '_subject' . $sufix] ) && isset( $this->default_settings[$email_type . '_heading' . $sufix] ) ) {
-                pll_register_string( 'woocommerce_' . $email_type . '_subject' . $sufix, $this->default_settings[$email_type . '_subject' . $sufix], 'Woocommerce Emails' );
-                pll_register_string( 'woocommerce_' . $email_type . '_heading' . $sufix, $this->default_settings[$email_type . '_heading' . $sufix], 'Woocommerce Emails' );
-            }
-        } else {
+        if ( $settings ) {
             if ( isset( $settings['subject' . $sufix] ) && isset( $settings['heading' . $sufix] ) ) {
                 pll_register_string( 'woocommerce_' . $email_type . '_subject' . $sufix, $settings['subject' . $sufix], 'Woocommerce Emails' );
                 pll_register_string( 'woocommerce_' . $email_type . '_heading' . $sufix, $settings['heading' . $sufix], 'Woocommerce Emails' );
@@ -412,14 +406,13 @@ class Emails
      * @param string    $string_type    Type of string to translate <subject | heading>
      * @param string    $email_type     Email template
      *
-     * @return string   Translated string, returns the original $string on error
+     * @return string   Translated string, returns the original $string if a user translation is not found
      */
     function translate_email_string( $string, $string_type, $email_type ) {
 
-        // Get setting used to register string in the Polylang strings translation table
         $_string = $string; // Store original string to return in case of error
         if ( false == ( $string = $this->get_email_setting( $string_type, $email_type ) ) ) {
-            return $_string;
+            return $_string; // Use default, it should be already in the user current language
         }
 
         // Retrieve translation from Polylang Strings Translations table
@@ -449,23 +442,32 @@ class Emails
             return $string; // Returns the original $string on error (no order to get language from)
         }
 
-        // Get setting used to register string in the Polylang strings translation table
-        $_string = $string; // Store original string to return in case of error
-        if ( false == ( $string = $this->get_email_setting( $string_type, $email_type ) ) ) {
-            return $_string;
-        }
-
         // Get order language
         $order_language = pll_get_post_language( $order->id, 'locale' );
         if ( $order_language == '' ) {
                 $order_language = pll_default_language( 'locale' );
         }
 
+        if ( $order_language == pll_current_language( 'locale' ) ) {
+            return $string; // Already on the right language
+        }
+
+        // Get setting used to register string in the Polylang strings translation table
+        $_string = $string; // Store original string to return in case of error
+        if ( false == ( $string = $this->get_email_setting( $string_type, $email_type ) ) && ! isset( $this->default_settings[$email_type . '_' . $string_type] ) ) {
+            return $_string; // No setting in Polylang strings translations table nor default string found to translate
+        }
+
         // Switch language
         $this->switch_language( $order_language );
 
-        // Retrieve translation from Polylang Strings Translations table
-        $string = pll__( $string );
+        if ( $string ) {
+            // Retrieve translation from Polylang Strings Translations table
+            $string = pll__( $string );
+        } else {
+            // If no user translation found in Polylang Strings Translations table, use WooCommerce default translation
+            $string = __( $this->default_settings[$email_type . '_' . $string_type], 'woocommerce' );
+        }
 
         $find                     = array();
         $replace                  = array();
@@ -489,25 +491,16 @@ class Emails
      * @param string $string_type <subject | heading> of $email_type, e.g. subject, subject_paid
      * @param string $email_type Email type, e.g. new_order, customer_invoice
      *
-     * return $string|boolean Email setting from database if one is found, fallback to default setting if one is defined, false otherwise
+     * return $string|boolean Email setting from database if one is found, false otherwise
      */
     function get_email_setting( $string_type, $email_type ) {
 
         $settings = get_option('woocommerce_' .$email_type . '_settings');
 
-        if ( false == $settings ) {
-            // Not in the database, use default
-            if ( isset( $this->default_settings[$email_type . '_' . $string_type] ) ) {
-                return $this->default_settings[$email_type . '_' . $string_type];
-            } else {
-                return false;
-            }
+        if ( $settings && isset( $settings[$string_type] ) ) {
+            return $settings[$string_type];
         } else {
-            if ( isset( $settings[$string_type] ) ) {
-                return $settings[$string_type];
-            } else {
-                return false;
-            }
+            return false; // Setting not registered for translation (admin have changed woocommerce default)
         }
     }
 
