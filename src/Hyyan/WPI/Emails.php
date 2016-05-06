@@ -444,12 +444,9 @@ class Emails
 
         // Get order language
         $order_language = pll_get_post_language( $order->id, 'locale' );
-        if ( $order_language == '' ) {
-                $order_language = pll_default_language( 'locale' );
-        }
 
-        if ( $order_language == pll_current_language( 'locale' ) ) {
-            return $string; // Already on the right language
+        if ( $order_language == '' ) {
+                $order_language = pll_current_language( 'locale' );
         }
 
         // Get setting used to register string in the Polylang strings translation table
