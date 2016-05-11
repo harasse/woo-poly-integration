@@ -157,12 +157,14 @@ class Emails
      */
     function register_string( $email_type, $sufix = '' ) {
 
-        $settings = get_option( 'woocommerce_' . $email_type . '_settings' );
+        if ( function_exists( 'pll_register_string' ) ) {
+            $settings = get_option( 'woocommerce_' . $email_type . '_settings' );
 
-        if ( $settings ) {
-            if ( isset( $settings['subject' . $sufix] ) && isset( $settings['heading' . $sufix] ) ) {
-                pll_register_string( 'woocommerce_' . $email_type . '_subject' . $sufix, $settings['subject' . $sufix], 'Woocommerce Emails' );
-                pll_register_string( 'woocommerce_' . $email_type . '_heading' . $sufix, $settings['heading' . $sufix], 'Woocommerce Emails' );
+            if ( $settings ) {
+                if ( isset( $settings['subject' . $sufix] ) && isset( $settings['heading' . $sufix] ) ) {
+                    pll_register_string( 'woocommerce_' . $email_type . '_subject' . $sufix, $settings['subject' . $sufix], 'Woocommerce Emails' );
+                    pll_register_string( 'woocommerce_' . $email_type . '_heading' . $sufix, $settings['heading' . $sufix], 'Woocommerce Emails' );
+                }
             }
         }
     }

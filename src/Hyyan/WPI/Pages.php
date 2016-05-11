@@ -64,10 +64,14 @@ class Pages
      */
     public function getPostTranslationID($id)
     {
-        $translatedID = pll_get_post($id);
+        if ( function_exists( 'pll_get_post' ) ) {
 
-        if ($translatedID) {
-            return $translatedID;
+            $translatedID = pll_get_post($id);
+
+            if ($translatedID) {
+                return $translatedID;
+            }
+            
         }
 
         return $id;
