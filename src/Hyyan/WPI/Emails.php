@@ -162,8 +162,8 @@ class Emails
 
             if ( $settings ) {
                 if ( isset( $settings['subject' . $sufix] ) && isset( $settings['heading' . $sufix] ) ) {
-                    pll_register_string( 'woocommerce_' . $email_type . '_subject' . $sufix, $settings['subject' . $sufix], 'Woocommerce Emails' );
-                    pll_register_string( 'woocommerce_' . $email_type . '_heading' . $sufix, $settings['heading' . $sufix], 'Woocommerce Emails' );
+                    pll_register_string( 'woocommerce_' . $email_type . '_subject' . $sufix, $settings['subject' . $sufix], __( 'Woocommerce Emails', 'woo-poly-integration') );
+                    pll_register_string( 'woocommerce_' . $email_type . '_heading' . $sufix, $settings['heading' . $sufix], __( 'Woocommerce Emails', 'woo-poly-integration') );
                 }
             }
         }
