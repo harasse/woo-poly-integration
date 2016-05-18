@@ -25,7 +25,7 @@ class Shipping
      */
     public function __construct() {
         // Register woocommerce shipping method custom names in polylang strings translations table
-        add_action( 'wp_loaded', array( $this, 'register_shipping_strings_for_translation' ) ); // called only after all plugins are loaded
+        add_action( 'wp_loaded', array( $this, 'register_shipping_strings_for_translation' ) ); // called only after Wordpress is loaded
 
         // Shipping method in the Cart and Checkout pages
         add_filter( 'woocommerce_shipping_rate_label', array( $this, 'translate_shipping_label' ), 10, 1 );
