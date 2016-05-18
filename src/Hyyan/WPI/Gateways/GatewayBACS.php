@@ -30,7 +30,7 @@ class GatewayBACS extends \WC_Gateway_BACS {
     public function thankyou_page( $order_id ) {
 
             if ( $this->instructions ) {
-                    echo wpautop( wptexturize( wp_kses_post( __( $this->instructions, 'woocommerce' ) ) ) );
+                    echo wpautop( wptexturize( wp_kses_post( function_exists( 'pll__' ) ? pll__( $this->instructions ) : __( $this->instructions, 'woocommerce' ) ) ) );
             }
             $this->bank_details( $order_id );
 
@@ -50,7 +50,7 @@ class GatewayBACS extends \WC_Gateway_BACS {
 
         if ( ! $sent_to_admin && 'bacs' === $order->payment_method && $order->has_status( 'on-hold' ) ) {
                 if ( $this->instructions ) {
-                        echo wpautop( wptexturize( __( $this->instructions, 'woocommerce' ) ) ) . PHP_EOL;
+                        echo wpautop( wptexturize( function_exists( 'pll__' ) ? pll__( $this->instructions ) : __( $this->instructions, 'woocommerce' ) ) ) . PHP_EOL;
                 }
                 $this->bank_details( $order->id );
         }
