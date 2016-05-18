@@ -36,10 +36,9 @@ class Shipping
     }
 
     /**
-    * Gets the shipping methods enabled in the shop
+    * Helper function - Gets the shipping methods enabled in the shop
     *
-    * @since 1.0.0
-    * @return array $active_methods The id of all active methods
+    * @return array $active_methods The id and respective plugin id of all active methods
     */
     private function get_active_shipping_methods() {
 
@@ -56,7 +55,7 @@ class Shipping
     }
 
     /**
-     * Register shipping method custom titles in polylang strings translations table
+     * Register shipping method custom titles in Polylang's Strings translations table
      */
     public function register_shipping_strings_for_translation() {
 
@@ -77,6 +76,10 @@ class Shipping
 
     /**
      * Translate shipping label in the Cart and Checkout pages
+     *
+     * @param string $label Shipping method label
+     *
+     * @return string Translated label
      */
     public function translate_shipping_label( $label ) {
         return function_exists( 'pll__' ) ? pll__( $label ) : __( $label , 'woocommerce' );
@@ -84,6 +87,11 @@ class Shipping
 
     /**
      * Translate shipping method title in My Account page, Order Emails and Paypal requests
+     *
+     * @param string $implode Comma separated string of shipping methods used in order
+     * @param WC_Order $instance Order instance
+     *
+     * @return string Comma separated string of translated shipping methods' titles
      */
     public function translate_order_shipping_method( $implode, $instance ) {
 
