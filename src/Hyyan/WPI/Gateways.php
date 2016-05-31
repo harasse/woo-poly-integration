@@ -19,8 +19,8 @@ namespace Hyyan\WPI;
  */
 class Gateways
 {
-    /** @var array Array of available gateways */
-    public $available_gateways;
+    /** @var array Array of enabled gateways */
+    public $enabled_gateways;
 
     /**
      * Construct object
@@ -29,16 +29,14 @@ class Gateways
         // Set the PayPal checkout locale code
         add_filter('woocommerce_paypal_args', array($this, 'setPaypalLocaleCode'));
 
-        // Set available payment gateways
-        $this->available_gateways = $this->get_available_payment_gateways();
+        // Set enabled payment gateways
+        $this->enabled_gateways = $this->get_enabled_payment_gateways();
 
         // Register Woocommerce Payment Gateway custom  titles and descriptions in Polylang's Strings translations table
         add_action( 'wp_loaded', array( $this, 'register_gateway_strings_for_translation' ) ); // called only after Wordpress is loaded
 
-        // Handle BACS intructions translation in the Thank You page and emails
-        new Gateways\GatewayBACS();
-        add_action( 'init', array( $this, 'remove_actions_instructions_bacs_gateway' ), 100 );
-        // TO-DO: do similar approach for Cheque and COD.
+        // Load payment gateways extensions (gateway intructions translation)
+        $this->load_payment_gateways_extentions();
 
         // Payment gateway title and respective description
         add_filter( 'woocommerce_gateway_title', array( $this, 'translate_payment_gateway_title' ), 10, 2 );
@@ -81,32 +79,84 @@ class Gateways
     }
 
     /**
-     * Get available payment gateways
+     * Get enabled payment gateways
      *
-     * @return array Array of available gateways
+     * @return array Array of enabled gateways
      */
-    public function get_available_payment_gateways() {
+    public function get_enabled_payment_gateways() {
+
+        $_enabled_gateways = array();
 
         $gateways = \WC_Payment_Gateways::instance();
 
-        return $gateways->get_available_payment_gateways();
+        if ( sizeof( $gateways->payment_gateways ) > 0 ) {
+            foreach ( $gateways->payment_gateways() as $gateway ) {
+                if ( $this->is_enabled( $gateway ) ) {
+                    $_enabled_gateways[ $gateway->id ] = $gateway;
+                }
+            }
+        }
+
+        return $_enabled_gateways;
     }
 
     /**
-     * Remove the add BACS gateway actions to avoid duplication when we instanciate
-     * the multi-language class Gateways\GatewayBACS class that doesn't have a
-     * __construct function and will use the parent function and set all these
-     * actions again.
+     * Is payment gateway enabled?
+     *
+     * @param WC_Payment_Gateway $gateway
+     *
+     * @return boolean True if gateway enabled, false otherwise
      */
-    public function remove_actions_instructions_bacs_gateway() {
+    public function is_enabled( $gateway ) {
+        return ( 'yes' === $gateway->enabled );
+    }
 
-        $available_gateways = $this->available_gateways;
+    /**
+     * Load payment gateways extentions
+     *
+     * Manage the gateways intructions translation in the Thank You page and
+     * Order emails. This is required because the strings are defined in the Construct
+     * object and no filters are available.
+     */
+    public function load_payment_gateways_extentions() {
 
-        if ( ! empty( $available_gateways ) && isset( $available_gateways['bacs'] ) ) {
-            remove_action( 'woocommerce_email_before_order_table', array( $available_gateways['bacs'], 'email_instructions' ) );
-            remove_action( 'woocommerce_thankyou_bacs', array( $available_gateways['bacs'], 'thankyou_page' ) );
-            remove_action( 'woocommerce_update_options_payment_gateways_' . $available_gateways['bacs']->id, array( $available_gateways['bacs'], 'process_admin_options' ) );
-            remove_action( 'woocommerce_update_options_payment_gateways_' . $available_gateways['bacs']->id, array( $available_gateways['bacs'], 'save_account_details' ) );
+        foreach ( $this->enabled_gateways as $gateway ) {
+            switch ( $gateway->id ) {
+                case 'bacs':
+                    new Gateways\GatewayBACS();
+                    break;
+                case 'cheque':
+                    new Gateways\GatewayCheque();
+                    break;
+                case 'cod':
+                    new Gateways\GatewayCOD();
+                    break;
+                default:
+                    break;
+            }
+
+            // Remove the gateway construct actions to avoid duplications
+            add_action( 'init', array( $this, 'remove_gateway_actions' ), 100 );
+
+            // Allows other plugins to load payment gateways class extentions or change the gateway object
+            do_action( HooksInterface::GATEWAY_LOAD_EXTENTION . $gateway->id, $gateway, $this->enabled_gateways );
+        }
+    }
+
+    /**
+     * Remove the gateway construct actions to avoid duplications when we instanciate
+     * the class extentions to add polylang support that doesn't have a __construct
+     * function and will use the parent's function and set all these actions again.
+     */
+    public function remove_gateway_actions() {
+        foreach ( $this->enabled_gateways as $gateway ) {
+            remove_action( 'woocommerce_email_before_order_table', array( $gateway, 'email_instructions' ) );
+            remove_action( 'woocommerce_thankyou_' . $gateway->id, array( $gateway, 'thankyou_page' ) );
+            remove_action( 'woocommerce_update_options_payment_gateways_' . $gateway->id, array( $gateway, 'process_admin_options' ) );
+
+            if ( 'bacs' == $gateway->id ) {
+                remove_action( 'woocommerce_update_options_payment_gateways_' . $gateway->id, array( $gateway, 'save_account_details' ) );
+            }
         }
     }
 
@@ -116,9 +166,9 @@ class Gateways
      */
     public function register_gateway_strings_for_translation() {
 
-        if ( function_exists( 'pll_register_string' ) && ! empty( $this->available_gateways ) ) {
+        if ( function_exists( 'pll_register_string' ) && ! empty( $this->enabled_gateways ) ) {
 
-            foreach ( $this->available_gateways as $gateway ) {
+            foreach ( $this->enabled_gateways as $gateway ) {
                 $settings = get_option( $gateway->plugin_id . $gateway->id . '_settings' );
 
                 if ( ! empty( $settings ) ) {

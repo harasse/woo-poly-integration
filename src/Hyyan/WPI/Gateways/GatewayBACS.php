@@ -22,8 +22,8 @@ class GatewayBACS extends \WC_Gateway_BACS {
     /**
     * Output for the order received page.
     *
-    * Note: The difference from WC_Gateway_BACS is that we use __() before
-    * passing the string through wptexturize() and wpautop().
+    * Note: The difference to WC_Gateway_BACS is that we use pll__() or __()
+    * before passing the string through wptexturize() and wpautop().
     *
     * @param int $order_id
     */

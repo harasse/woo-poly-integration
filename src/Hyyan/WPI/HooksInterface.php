@@ -86,10 +86,10 @@ interface HooksInterface
     /**
      * Product Copy Category Custom Fields
      *
-     * The action is fired when new translatin is being added for product category
+     * The action is fired when a new translation is being added for a product category
      *
-     * The action can be used to copy catefory custom fields from give category
-     * ID to its transation
+     * The action can be used to copy category custom fields from a given category
+     * ID to its translation
      *
      * for instance :
      *
@@ -164,4 +164,23 @@ interface HooksInterface
      */
     const LANGUAGE_REPO_URL_FILTER = 'woo-poly.language.repoUrl';
 
+    /**
+     * Load Payment Gateway Extention
+     *
+     * The action is fired when this plugin is initialised and allows other plugins
+     * to load payment gateways extentions or change the gateway object to
+     * enable Polylang support.
+     *
+     * The action can be used to load a class extention for a given payment gateway
+     *
+     * for instance :
+     *
+     * <code>
+     * add_action(HooksInterface::GATEWAY_LOAD_EXTENTION . $gateway->id,function ($gateway, $available_gateways) {
+     *
+     *        // do whatever you want here
+     * });
+     * </code>
+     */
+    const GATEWAY_LOAD_EXTENTION = 'woo-poly.gateway.loadClassExtention.';
 }
