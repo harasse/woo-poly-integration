@@ -5,6 +5,7 @@
 * Fixed shipment methods translation
 * Fixed broken 'my account' breadcrumbs links
 * Fixed order details backend page html
+* Fixed php warning due to polylang deprecated methods
 
 ###0.26
 
