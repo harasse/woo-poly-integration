@@ -6,12 +6,6 @@
 * Fixed broken 'my account' breadcrumbs links
 * Fixed order details backend page html
 
-* Fixed product duplication in shop page when default language is changed
-* Fixed total sales is syned even if product is not managing stock
-* Fixed duplicator class PHP notice when product is being edited in quick mode
-* Fixed random behaviour for product type sync
-* Fixed tax class are not synced
-
 ###0.26
 
 * Fixed product duplication in shop page when default language is changed
