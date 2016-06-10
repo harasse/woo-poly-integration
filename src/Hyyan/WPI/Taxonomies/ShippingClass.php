@@ -15,9 +15,8 @@ namespace Hyyan\WPI\Taxonomies;
  *
  * @author Hyyan Abo Fakher <tiribthea4hyyan@gmail.com>
  */
-class ShippingCalss implements TaxonomiesInterface
+class ShippingClass implements TaxonomiesInterface
 {
-
     /**
      * @{inheritdoc}
      */

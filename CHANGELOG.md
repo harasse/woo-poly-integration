@@ -1,9 +1,18 @@
-###0.26 (Not Released)
+###0.27
+
+* Fixed order emails translations
+* Fixed payment gateways translation
+* Fixed shipment methods translation
+* Fixed broken 'my account' breadcrumbs links
+* Fixed order details backend page html
+* Fixed php warning due to polylang deprecated methods
+
+###0.26
 
 * Fixed product duplication in shop page when default language is changed
 * Fixed total sales is syned even if product is not managing stock
 * Fixed duplicator class PHP notice when product is being edited in quick mode
-* Fixed random behaviour for product type sync 
+* Fixed random behaviour for product type sync
 * Fixed tax class are not synced
 
 ###0.25
@@ -26,7 +35,7 @@
 
 * Added support for Woocommerce search widget @see [Duplicated search result](https://wordpress.org/support/topic/duplicated-search-result)
 * Fixed translation downloader tries to download woo translations for en_US locale
-* Fixed wrong product duplicate behavior 
+* Fixed wrong product duplicate behavior
 
 ###0.22
 
@@ -104,7 +113,7 @@
 
 ###0.11
 
-* Improved support for product variations 
+* Improved support for product variations
 * Imporved support for orders
 
 ###0.10
@@ -113,13 +122,13 @@
 
 ###0.9
 
-* Refactoring Code 
+* Refactoring Code
 * Added support for variation products
 
 
 ###0.8
 
-* Refactoring Code 
+* Refactoring Code
 * General Improvements
 
 ###0.7
